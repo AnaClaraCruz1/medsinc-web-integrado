@@ -204,8 +204,10 @@ function configurarCadastro() {
       }
       const criado = await resposta.json();
       form.reset();
-      feedback.textContent = "Paciente #" + criado.id + " cadastrado no banco de dados com sucesso.";
-      feedback.className = "form-feedback";
+      setTimeout(() => {
+        feedback.textContent = "Paciente #" + criado.id + " cadastrado no banco de dados com sucesso.";
+        feedback.className = "form-feedback";
+      }, 0);
     } catch (erro) {
       feedback.textContent = "Falha de comunicação com o servidor. Nenhuma confirmação de cadastro foi recebida.";
       feedback.className = "form-feedback error";
