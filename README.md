@@ -37,7 +37,7 @@ medsinc-web-integrado/
 └── pom.xml
 ```
 
-A estrutura será preenchida gradualmente conforme a integração e validação dos módulos.
+A estrutura está sendo preenchida por módulos. A primeira vertical iniciada é a consulta de pacientes.
 
 ## Configuração do banco
 
@@ -78,4 +78,4 @@ Fontes: [Etapa 6 e Atividade 7](https://github.com/AnaClaraCruz1/medsinc-refator
 
 ## Status
 
-**Estrutura inicial e incorporação de fontes concluídas.** Ainda não foram implementados os endpoints REST nem a integração dos formulários com o banco. O projeto ainda precisa ser compilado e executado no ambiente local; não considerar os testes como reexecutados nesta etapa até que isso seja feito.
+**Integração de leitura de pacientes iniciada.** Foram criados DTO de resposta, repositório JDBC com JdbcTemplate, serviço, endpoints GET e teste unitário do serviço. Foi criada uma migração SQL incremental para os campos novos do formulário, preservando as colunas legadas. A migração ainda precisa ser executada no banco local. Cadastro/edição/exclusão, autenticação/autorização e integração do JavaScript com a API ainda não estão concluídos. O projeto ainda precisa ser compilado e executado no ambiente local; o novo teste ainda não foi executado nesta etapa.
