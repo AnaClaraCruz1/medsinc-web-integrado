@@ -32,7 +32,7 @@ O diretório de backups pode ser configurado por `MEDSINC_BACKUP_DIR`; o padrão
 
 ## Autenticação e segurança
 - `POST /api/auth/login`, `GET /api/auth/me` e `POST /api/auth/logout` gerenciam a sessão.
-- `GET /api/auth/csrf` emite token associado à sessão. Requisições POST, PUT e DELETE exigem o cabeçalho `X-CSRF-TOKEN`.
+- `GET /api/auth/csrf` emite token associado à sessão. Requisições POST, PUT e DELETE — inclusive login — exigem o cabeçalho `X-CSRF-TOKEN`.
 - O cookie de sessão é HttpOnly e SameSite=Lax.
 - Senhas legadas são migradas para BCrypt após login válido; novas senhas também são armazenadas com BCrypt.
 - Respostas de usuários nunca incluem hashes ou senhas.
