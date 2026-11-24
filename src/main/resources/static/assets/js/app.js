@@ -262,9 +262,35 @@ function configurarConsulta() {
   renderizar();
 }
 
-function configurarPainel() {
+async function configurarPainel() {
   const contador = document.getElementById("dashboard-count");
-  if (contador) contador.textContent = obterPacientes().length;
+  if (!contador) return;
+  try {
+    const resposta = await fetch("/api/pacientes", { credentials: "same-origin" });
+    if (resposta.status === 401) {
+      window.location.replace("/");
+      return;
+    }
+    if (!resposta.ok) throw new Error("Falha ao consultar pacientes.");
+    const pacientes = await resposta.json();
+    contador.textContent = pacientes.length;
+  } catch (erro) {
+    contador.textContent = "—";
+    console.warn("Não foi possível carregar o total de pacientes.", erro);
+  }
+}
+
+function configurarLogout() {
+  const link = document.getElementById("logout-link");
+  if (!link) return;
+  link.addEventListener("click", async evento => {
+    evento.preventDefault();
+    try {
+      await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
+    } finally {
+      window.location.replace("/");
+    }
+  });
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -274,4 +300,5 @@ document.addEventListener("DOMContentLoaded", async () => {
   configurarCadastro();
   configurarConsulta();
   configurarPainel();
+  configurarLogout();
 });
