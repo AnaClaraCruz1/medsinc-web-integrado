@@ -40,7 +40,8 @@ Este documento distingue implementação de validação. Os testes manuais já a
 - [ ] Preparar ZIP final sem dumps, backups, senhas ou dados pessoais.
 
 ## Bugtracking
-- [x] Issue #1 criada para a falha real de compilação do diretório de backup, corrigida e encerrada após CI verde.
+- [x] Issue #1: falha de compilação no serviço de backup corrigida e encerrada após CI verde.
+- [x] Issue #2: trecho Java inválido no serviço de consultas corrigido e encerrado após CI verde.
 - [ ] Registrar outros defeitos somente se forem reproduzidos durante a validação consolidada.
 
 ## Segurança e entrega
