@@ -21,13 +21,13 @@ Este checklist evita repetir atividades já concluídas nas etapas anteriores. A
 
 - [ ] Criar projeto Maven Spring Boot.
 - [ ] Incorporar modelos, serviços e repositórios compatíveis da Etapa 6.
-- [ ] Definir DTOs e endpoints REST.
-- [ ] Definir migração compatível do banco sem perda de dados.
+- [x] Definir DTO de resposta e endpoints GET de consulta de pacientes. Cadastro/edição/exclusão permanecem pendentes.
+- [x] Criar migração SQL incremental compatível, preservando colunas e registros legados. Execução local ainda pendente.
 - [ ] Integrar autenticação e autorização.
 - [ ] Servir a interface da Etapa 8 em `resources/static`.
 - [ ] Substituir operações demonstrativas por chamadas reais à API.
 - [ ] Integrar os 17 testes existentes sem reduzir cobertura.
-- [ ] Criar testes novos apenas para funcionalidades e integrações ainda não cobertas.
+- [x] Criar teste unitário inicial para o serviço de consulta de pacientes. Execução local pendente.
 
 ## Validação e evidências
 
