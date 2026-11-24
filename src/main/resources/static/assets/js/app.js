@@ -81,19 +81,41 @@ function limparErros() {
 function configurarLogin() {
   const form = document.getElementById("login-form");
   if (!form) return;
-  form.addEventListener("submit", evento => {
+  form.addEventListener("submit", async evento => {
     evento.preventDefault();
     const email = document.getElementById("login-email").value.trim();
     const senha = document.getElementById("login-password").value;
     const feedback = document.getElementById("login-feedback");
+    const botao = form.querySelector('button[type="submit"]');
     if (!email || !senha) {
       feedback.textContent = "Preencha o e-mail e a senha para continuar.";
       feedback.className = "form-feedback error";
       return;
     }
-    feedback.textContent = "Acesso demonstrativo liberado.";
+    botao.disabled = true;
+    feedback.textContent = "Validando acesso...";
     feedback.className = "form-feedback";
-    window.location.href = "dashboard.html";
+    try {
+      const resposta = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ email, senha })
+      });
+      if (!resposta.ok) {
+        feedback.textContent = resposta.status === 401
+          ? "E-mail ou senha inválidos."
+          : "Não foi possível realizar o acesso. Tente novamente.";
+        feedback.className = "form-feedback error";
+        return;
+      }
+      window.location.href = "dashboard.html";
+    } catch (erro) {
+      feedback.textContent = "Não foi possível conectar ao servidor.";
+      feedback.className = "form-feedback error";
+    } finally {
+      botao.disabled = false;
+    }
   });
 }
 
