@@ -2,9 +2,14 @@ package br.com.medsinc.infrastructure.repository;
 
 import br.com.medsinc.api.dto.PacienteResponse;
 import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -52,6 +57,40 @@ public class PacienteJdbcRepository {
                 SELECT_BASE + " WHERE paciente_id = ?",
                 (rs, rowNum) -> mapear(rs), id);
         return encontrados.stream().findFirst();
+    }
+
+    public int inserir(
+            String nome, String cpf, LocalDate nascimento, int idade,
+            String telefone, String email, String endereco, String convenio,
+            int usuarioCadastroId) {
+
+        String sql = """
+                INSERT INTO pacientes
+                    (nome, cpf, data_nascimento, idade, endereco, contato,
+                     telefone, email, convenio, usuario_cadastro_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """;
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(connection -> {
+            PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            statement.setString(1, nome);
+            statement.setString(2, cpf);
+            statement.setDate(3, Date.valueOf(nascimento));
+            statement.setInt(4, idade);
+            statement.setString(5, endereco);
+            statement.setString(6, telefone);
+            statement.setString(7, telefone);
+            statement.setString(8, email);
+            statement.setString(9, convenio);
+            statement.setInt(10, usuarioCadastroId);
+            return statement;
+        }, keyHolder);
+
+        Number chave = keyHolder.getKey();
+        if (chave == null) {
+            throw new IllegalStateException("O banco não retornou o identificador do paciente.");
+        }
+        return chave.intValue();
     }
 
     private PacienteResponse mapear(java.sql.ResultSet rs) throws java.sql.SQLException {
