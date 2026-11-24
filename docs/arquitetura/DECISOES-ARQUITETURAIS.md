@@ -39,7 +39,7 @@ A migração incremental adicionou CPF, nascimento, telefone, e-mail e convênio
 - Pacientes: `PacienteJdbcRepository`.
 - Consultas: `ConsultaJdbcRepository`, com relacionamento para pacientes e usuários médicos.
 - Estoque, histórico, usuários, relatórios e backups: `GestaoJdbcRepository`.
-- Backup: `BackupBancoService` gera arquivo SQL de dados no servidor, sem comando destrutivo de exclusão; registros com a mesma chave primária são atualizados via REPLACE. O esquema precisa existir no banco de destino.
+- Backup: `BackupBancoService` gera arquivo SQL de dados no servidor, sem comando destrutivo de exclusão; registros existentes são atualizados com `INSERT ... ON DUPLICATE KEY UPDATE`, sem excluir e reinserir as linhas. O esquema precisa existir no banco de destino.
 
 ## Cuidados com dados
 - Credenciais somente por variáveis de ambiente.
