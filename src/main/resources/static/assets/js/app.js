@@ -125,9 +125,12 @@ function configurarCadastro() {
     feedback.textContent = "Salvando paciente no banco de dados...";
     feedback.className = "form-feedback";
     try {
+      const csrfResponse = await fetch("/api/auth/csrf", { credentials: "same-origin" });
+      if (!csrfResponse.ok) throw new Error("Não foi possível validar o token de segurança.");
+      const csrf = await csrfResponse.json();
       const resposta = await fetch("/api/pacientes", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": csrf.token },
         credentials: "same-origin",
         body: JSON.stringify({
           nome: dados.nome.trim(),
@@ -242,7 +245,11 @@ function configurarLogout() {
   link.addEventListener("click", async evento => {
     evento.preventDefault();
     try {
-      await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
+      const csrfResponse = await fetch("/api/auth/csrf", { credentials: "same-origin" });
+      if (csrfResponse.ok) {
+        const csrf = await csrfResponse.json();
+        await fetch("/api/auth/logout", { method: "POST", headers: { "X-CSRF-TOKEN": csrf.token }, credentials: "same-origin" });
+      }
     } finally {
       window.location.replace("/");
     }
