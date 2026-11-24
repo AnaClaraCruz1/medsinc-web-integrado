@@ -39,7 +39,7 @@ public class BackupBancoService {
             if (!destino.startsWith(diretorio)) throw new IllegalStateException("Diretório de backup inválido.");
             jdbc.execute((ConnectionCallback<Void>) connection -> {
                 try (BufferedWriter writer = Files.newBufferedWriter(destino, StandardCharsets.UTF_8)) {
-                    writer.write("-- Backup MEDSiNC gerado pelo servidor. Guarde este arquivo em local protegido.\n");
+                    writer.write("-- Backup de dados MEDSiNC. Requer o esquema do projeto; REPLACE atualiza registros com a mesma chave primária. Guarde em local protegido.\n");
                     writer.write("SET FOREIGN_KEY_CHECKS=0;\n");
                     for (String tabela : tabelas(connection)) {
                         writer.write("\n-- Tabela " + tabela + "\n");
@@ -56,7 +56,7 @@ public class BackupBancoService {
                                     Object valor = rs.getObject(i);
                                     valores.add(literal(valor));
                                 }
-                                writer.write("INSERT INTO `" + tabela + "` (" + String.join(", ", nomes)
+                                writer.write("REPLACE INTO `" + tabela + "` (" + String.join(", ", nomes)
                                         + ") VALUES (" + String.join(", ", valores) + ");\n");
                             }
                         }
