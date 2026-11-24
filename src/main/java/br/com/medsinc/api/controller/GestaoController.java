@@ -68,6 +68,8 @@ public class GestaoController {
         exigirPerfil(req, "administrador", "medico");
         if (body.pacienteId() == null || body.pacienteId() <= 0 || body.medicoId() == null || body.medicoId() <= 0)
             throw erro(HttpStatus.BAD_REQUEST, "Selecione paciente e profissional.");
+        if (!repository.usuarioEhMedico(body.medicoId()))
+            throw erro(HttpStatus.BAD_REQUEST, "O profissional selecionado não possui perfil médico.");
         validarTexto(body.descricao(), "Descrição", 10000);
         if (body.data() == null || body.data().isAfter(java.time.LocalDate.now()))
             throw erro(HttpStatus.BAD_REQUEST, "Informe uma data válida, não futura.");
