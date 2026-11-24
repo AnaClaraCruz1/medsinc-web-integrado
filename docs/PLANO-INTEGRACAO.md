@@ -31,7 +31,7 @@ Este documento distingue implementação de validação. Os testes manuais já a
 - [x] Etapa 8: páginas e fluxo demonstrativo conferidos manualmente.
 - [x] Etapa 9, primeira rodada: 21 testes aprovados antes das alterações dos módulos.
 - [x] Etapa 9, pacientes: 29 testes aprovados localmente e 11 verificações manuais aprovadas, incluindo cadastro fictício, CPF duplicado, validações, login e proteção após logout.
-- [ ] CI do commit consolidado: aguardar resultado verde após correções identificadas.
+- [x] CI do commit consolidado: JavaScript validado com `node --check`; 35 testes Maven aprovados, zero falhas/erros/ignorados, BUILD SUCCESS.
 - [ ] Executar uma única validação local consolidada de `mvn clean test`.
 - [ ] Executar smoke tests integrados de cada módulo com dados fictícios, incluindo permissões por perfil e token CSRF.
 - [ ] Verificar geração, conteúdo e restauração controlada do backup em banco de teste isolado.
@@ -40,8 +40,7 @@ Este documento distingue implementação de validação. Os testes manuais já a
 - [ ] Preparar ZIP final sem dumps, backups, senhas ou dados pessoais.
 
 ## Bugtracking
-- [x] Issue #1 criada para a falha real de compilação do diretório de backup detectada na CI.
-- [ ] Confirmar CI verde após a correção e encerrar a issue com referência ao commit corretivo.
+- [x] Issue #1 criada para a falha real de compilação do diretório de backup, corrigida e encerrada após CI verde.
 - [ ] Registrar outros defeitos somente se forem reproduzidos durante a validação consolidada.
 
 ## Segurança e entrega
