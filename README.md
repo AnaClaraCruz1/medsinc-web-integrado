@@ -1,81 +1,89 @@
 # MEDSiNC — Aplicação Web Integrada
 
-Projeto Integrador desenvolvido para a Etapa 9, reunindo o back-end Java, a persistência MySQL, a interface web e os testes das etapas anteriores.
+Projeto Integrador desenvolvido para a Etapa 9, reunindo back-end Java, persistência MySQL, interface web e testes das etapas anteriores.
 
 ## Objetivo
 
-Evoluir a interface demonstrativa da Etapa 8 para uma aplicação web integrada, com API REST em Spring Boot e persistência JDBC/MySQL, reaproveitando e adaptando os componentes de domínio da Etapa 6 e os testes JUnit da Etapa 7.
+Evoluir a interface da Etapa 8 para uma aplicação integrada, com API REST em Spring Boot e persistência JDBC/MySQL, reaproveitando componentes de domínio da Etapa 6 e testes JUnit da Etapa 7.
 
-## Tecnologias previstas
+## Tecnologias
 
-- Java (versão definida após conferir a compatibilidade do ambiente)
-- Spring Boot e Spring Web (API REST)
-- JDBC e MySQL
-- Maven
-- JUnit 5 e Spring Boot Test
+- Java 17 como versão-alvo do projeto (validado localmente com Java 24.0.2)
+- Spring Boot 3.5.7, Spring Web, Spring JDBC e Bean Validation
+- MySQL e Maven
+- JUnit 5, Mockito e Spring Boot Test
 - HTML, CSS e JavaScript
 
-## Organização
+## Configuração
 
-```text
-medsinc-web-integrado/
-├── docs/
-│   ├── arquitetura/
-│   ├── evidencias/
-│   │   ├── testes/
-│   │   ├── bugs/
-│   │   └── versionamento/
-│   ├── plano-de-testes/
-│   └── banco-de-dados/
-├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   └── resources/
-│   │       ├── static/
-│   │       └── db/
-│   └── test/
-└── pom.xml
-```
-
-A estrutura está sendo preenchida por módulos. A primeira vertical iniciada é a consulta de pacientes.
-
-## Configuração do banco
-
-A aplicação utilizará as variáveis de ambiente já definidas no ambiente de execução:
+A conexão utiliza variáveis de ambiente:
 
 - `MEDSINC_DB_URL`
 - `MEDSINC_DB_USER`
 - `MEDSINC_DB_PASSWORD`
 
-Não incluir credenciais no código-fonte ou no repositório. O script de banco e eventuais migrações serão documentados em `docs/banco-de-dados/`.
+Não incluir credenciais, dumps com dados pessoais ou arquivos locais de configuração no Git. A aplicação não executa migrações automaticamente (`spring.sql.init.mode=never`).
 
-## Etapas de integração
+## Execução local
 
-1. Inventariar e selecionar os componentes validados das Etapas 6, 7 e 8.
-2. Definir o contrato da API e adaptar os modelos/DTOs para os campos da interface.
-3. Implementar persistência e serviços com tratamento consistente de erros.
-4. Integrar as páginas estáticas à API.
-5. Incorporar os testes existentes e acrescentar cobertura para os fluxos novos.
-6. Executar o plano de testes, registrar defeitos e correções.
-7. Preparar evidências de testes e versionamento para a entrega.
+Na pasta que contém `pom.xml`, com JDK e Maven configurados:
 
-## Segurança e dados
+```powershell
+mvn test
+mvn spring-boot:run
+```
 
-- Senhas devem ser armazenadas com hash seguro, nunca em texto puro.
-- Segredos e dados pessoais reais não devem ser enviados ao Git.
-- Dados fictícios devem ser usados nas evidências.
-- A autenticação e as permissões serão implementadas e testadas antes de serem consideradas funcionais.
+Se o Maven não estiver no PATH no Windows, pode-se chamar o executável Maven instalado com o NetBeans. Configure `JAVA_HOME` apenas para a sessão do terminal se necessário.
 
-## Materiais já incorporados
+A aplicação web é servida em `http://localhost:8080`.
 
-- Interface da Etapa 8: cinco páginas HTML, folhas CSS e scripts JavaScript em `src/main/resources/static/`.
-- Modelos de domínio da Etapa 6: paciente, consulta, item de estoque, histórico médico e usuário.
-- Testes JUnit da Etapa 7: classes `PacienteTest`, `ConsultaTest` e `ItemEstoqueTest` (17 métodos de teste).
-- Plano de testes da Atividade 7 e script SQL original, preservados em `docs/`.
-- Projeto Maven configurado com Spring Boot 3.5.7 e Java 17.
+## Estrutura
+
+- `src/main/java/br/com/medsinc/api`: controllers e DTOs.
+- `src/main/java/br/com/medsinc/application`: serviços e casos de uso.
+- `src/main/java/br/com/medsinc/infrastructure`: persistência JDBC.
+- `src/main/resources/static`: páginas e recursos da interface.
+- `src/main/resources/db/migration`: migrações SQL manuais e versionadas.
+- `src/test`: testes automatizados.
+- `docs`: arquitetura, contratos, plano de integração, testes e evidências.
+
+## Segurança — autenticação
+
+A API disponibiliza:
+
+- `POST /api/auth/login`: recebe JSON com `email` e `senha`; autentica contra a tabela `usuarios) e cria sessão HTTP.
+- `GET /api/auth/me`: retorna os dados não sensíveis do usuário da sessão.
+- `POST /api/auth/logout`: invalida a sessão.
+
+Senhas legadas em texto simples são verificadas para compatibilidade e, após login válido, atualizadas para hash BCrypt. Senhas já armazenadas em BCrypt são verificadas sem alteração. A resposta nunca inclui senha ou hash.
+
+A interface de login já envia as credenciais à API. A proteção de todas as páginas e operações por sessão/perfil ainda precisa ser concluída; portanto, esta autenticação inicial não deve ser tratada como implantação de produção.
+
+## Pacientes — status da integração
+
+- Leitura e pesquisa via `GET /api/pacientes) e `GET /api/pacientes/{id}`.
+- Migração local adicionou CPF, data de nascimento, telefone, e-mail e convênio sem remover colunas antigas; índice único em CPF.
+- Cadastro, edição, exclusão e integração completa das telas com a API ainda estão pendentes.
+
+## Materiais incorporados
+
+- Interface da Etapa 8 (cinco páginas HTML, CSS e JavaScript).
+- Modelos de domínio da Etapa 6.
+- Testes JUnit da Etapa 7: `PacienteTest`, `ConsultaTest` e `ItemEstoqueTest` (17 métodos).
+- Plano de testes e script SQL original.
 
 Fontes: [Etapa 6 e Atividade 7](https://github.com/AnaClaraCruz1/medsinc-refatorado/tree/atividade-7) e [Etapa 8](https://github.com/AnaClaraCruz1/medsinc-web).
 
-## Status
+## Validações locais registradas em 24/11/2026
 
-**Integração de leitura de pacientes iniciada.** Foram criados DTO de resposta, repositório JDBC com JdbcTemplate, serviço, endpoints GET e teste unitário do serviço. Foi criada uma migração SQL incremental para os campos novos do formulário, preservando as colunas legadas. A migração ainda precisa ser executada no banco local. Cadastro/edição/exclusão, autenticação/autorização e integração do JavaScript com a API ainda não estão concluídos. O projeto ainda precisa ser compilado e executado no ambiente local; o novo teste ainda não foi executado nesta etapa.
+- `mvn test): 21 testes executados, zero falhas/erros/ignorados, BUILD SUCCESS, antes da inclusão dos testes de autenticação.
+- `mvn spring-boot:run): servidor iniciado na porta 8080.
+- Páginas inicial e consulta de pacientes abriram via servidor.
+- `GET /api/pacientes): retornou 16 registros.
+- Pesquisa por termo inexistente: retornou zero registros.
+
+Os novos testes de autenticação e as alterações mais recentes ainda precisam ser executados localmente. O funcionamento de login também precisa ser validado com uma conta de teste autorizada.
+
+## Entrega
+
+A conclusão depende de testes integrados, evidências reais, registro de defeitos encontrados e preparação do ZIP final. Não usar dados reais de pacientes nas capturas ou arquivos de entrega.
