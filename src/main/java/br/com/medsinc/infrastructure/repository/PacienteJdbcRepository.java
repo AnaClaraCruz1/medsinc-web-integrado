@@ -78,6 +78,9 @@ public class PacienteJdbcRepository {
             statement.setDate(3, Date.valueOf(nascimento));
             statement.setInt(4, idade);
             statement.setString(5, endereco);
+            // Compatibilidade com a Etapa 6: a coluna legada "contato" era usada
+            // como contato principal. Mantemos o telefone nela e também na nova
+            // coluna "telefone", sem alterar a leitura dos registros antigos.
             statement.setString(6, telefone);
             statement.setString(7, telefone);
             statement.setString(8, email);
