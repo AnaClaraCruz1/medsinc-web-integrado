@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="MEDSiNC — interface web demonstrativa para gestão de pacientes.">
+    <meta name="author" content="Ana Clara Cruz">
+  <title>Acesso | MEDSiNC</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body class="login-page">
+  <main class="login-shell">
+    <section class="login-brand">
+      <a class="brand brand-light" href="index.html"><span class="brand-mark">M</span><span>MEDSiNC</span></a>
+      <div class="brand-message">
+        <span class="eyebrow">GESTÃO EM SAÚDE</span>
+        <h1>Cuidado organizado começa com informação bem cuidada.</h1>
+        <p>Uma interface simples e integrada para apoiar a rotina de gestão de pacientes.</p>
+      </div>
+      <span class="login-footnote">Projeto Integrador · Etapa 8</span>
+    </section>
+    <section class="login-panel">
+      <div class="login-card">
+        <span class="eyebrow">BEM-VINDA(O)</span>
+        <h2>Acesse o MEDSiNC</h2>
+        <p class="muted">Entre para visualizar a demonstração da interface.</p>
+        <form id="login-form" class="form-stack">
+          <label for="login-email">E-mail</label>
+          <input id="login-email" name="email" type="email" placeholder="seu@email.com" autocomplete="username" required>
+          <label for="login-password">Senha</label>
+          <input id="login-password" name="password" type="password" placeholder="Digite qualquer senha" autocomplete="current-password" required>
+          <button class="button button-primary button-full" type="submit">Acessar demonstração <span aria-hidden="true">→</span></button>
+          <p id="login-feedback" class="form-feedback" role="status"></p>
+        </form>
+        <div class="demo-note"><strong>Ambiente demonstrativo</strong><br>O acesso não realiza autenticação real nem verifica credenciais.</div>
+      </div>
+    </section>
+  </main>
+  <script src="assets/js/app.js" defer></script>
+</body>
+</html>
