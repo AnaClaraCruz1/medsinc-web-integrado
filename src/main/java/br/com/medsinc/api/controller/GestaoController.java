@@ -46,7 +46,7 @@ public class GestaoController {
 
     @PutMapping("/estoque/{id}")
     public void atualizarEstoque(@PathVariable int id, @RequestBody EstoqueRequest body, HttpServletRequest req) {
-        int usuario = exigirPerfil(req, "administrador", "farmaceutico"); if (id <= 0); if (id <= 0) throw erro(HttpStatus.BAD_REQUEST, "ID inválido.");
+        int usuario = exigirPerfil(req, "administrador", "farmaceutico"); if (id <= 0) throw erro(HttpStatus.BAD_REQUEST, "ID inválido.");
         validarTexto(body.nome(), "Nome do item", 150); validarTexto(body.unidade(), "Unidade", 50);
         validarQuantidades(body.quantidade(), body.minimo());
         try { repository.atualizarEstoque(id, body.nome().trim(), body.quantidade(), body.unidade().trim(), body.minimo(), usuario); }
