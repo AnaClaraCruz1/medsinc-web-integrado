@@ -44,6 +44,13 @@ public class GestaoJdbcRepository {
         if (alterados == 0) throw new IllegalArgumentException("Item de estoque não encontrado.");
     }
 
+    public boolean usuarioEhMedico(int usuarioId) {
+        Integer total = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM usuarios WHERE usuario_id = ? AND perfil = 'medico'",
+                Integer.class, usuarioId);
+        return total != null && total > 0;
+    }
+
     public List<Map<String, Object>> listarHistoricos(String busca) {
         String filtro = "%" + (busca == null ? "" : busca.trim()) + "%";
         return jdbc.queryForList("""
