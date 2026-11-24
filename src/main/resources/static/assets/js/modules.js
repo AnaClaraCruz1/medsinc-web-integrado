@@ -44,7 +44,14 @@ function renderConsultasAPI(root){
  filter.addEventListener("input",draw);load();
 }
 async function api(url,options={}){
- const response=await fetch(url,{credentials:"same-origin",...options});
+ const method=(options.method||"GET").toUpperCase();
+ const headers={...(options.headers||{})};
+ if(["POST","PUT","PATCH","DELETE"].includes(method)){
+  const csrfResponse=await fetch("/api/auth/csrf",{credentials:"same-origin"});
+  if(!csrfResponse.ok)throw new Error("Não foi possível validar o token de segurança.");
+  const csrf=await csrfResponse.json();headers["X-CSRF-TOKEN"]=csrf.token;
+ }
+ const response=await fetch(url,{credentials:"same-origin",...options,headers});
  if(response.status===401){window.location.replace("../");throw new Error("Sessão expirada.")}
  if(!response.ok){let message="Não foi possível concluir a operação.";try{const body=await response.json();message=body.detail||body.message||message}catch{}throw new Error(message)}
  return response.status===204?null:response.json();
