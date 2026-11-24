@@ -27,7 +27,10 @@ Este checklist evita repetir atividades concluídas anteriormente. Atualizar o s
 - [ ] Testar cadastro de paciente com dados fictícios, duplicidade de CPF e validações.
 - [ ] Implementar edição e exclusão de pacientes pela API.
 - [ ] Implementar autorização por perfil e proteção CSRF dedicada.
-- [ ] Integrar consultas, estoque, histórico, usuários, relatórios e backups à persistência real.
+- [x] Implementar API JDBC de consultas: listagem com nomes relacionados, lista de médicos e cadastro com IDs reais de paciente/profissional.
+- [x] Substituir o formulário demonstrativo de consultas por tela conectada à API.
+- [x] Adicionar testes unitários para o serviço de consultas (execução local pendente).
+- [ ] Integrar estoque, histórico, usuários, relatórios e backups à persistência real.
 - [ ] Integrar testes de API/JDBC para fluxos novos.
 
 ## Validação e evidências
@@ -36,7 +39,7 @@ Este checklist evita repetir atividades concluídas anteriormente. Atualizar o s
 - [x] Inicialização local do Spring Boot na porta 8080.
 - [x] Páginas inicial e consulta abriram via servidor.
 - [x] GET de pacientes retornou 16 registros; busca inexistente retornou zero antes da exigência de sessão.
-- [ ] Reexecutar mvn test após as alterações.
+- [ ] Executar mvn test após a implementação de consultas (inclui 6 testes novos ainda não executados localmente).
 - [ ] Executar os casos aplicáveis do plano de testes da Etapa 7.
 - [ ] Registrar defeitos reais no GitHub Issues com reprodução, esperado/obtido e correção.
 - [ ] Capturar evidências reais de testes e versionamento.
