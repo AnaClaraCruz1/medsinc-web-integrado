@@ -50,9 +50,12 @@ function configurarLogin() {
     feedback.textContent = "Validando acesso...";
     feedback.className = "form-feedback";
     try {
+      const csrfResponse = await fetch("/api/auth/csrf", { credentials: "same-origin" });
+      if (!csrfResponse.ok) throw new Error("Não foi possível validar o token de segurança.");
+      const csrf = await csrfResponse.json();
       const resposta = await fetch("/api/auth/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": csrf.token },
         credentials: "same-origin",
         body: JSON.stringify({ email, senha })
       });
