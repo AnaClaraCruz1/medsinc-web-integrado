@@ -54,6 +54,13 @@ public class ConsultaJdbcRepository {
                 pacienteId, medicoId, data, hora, status);
     }
 
+    public boolean usuarioEhMedico(int usuarioId) {
+        Integer total = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM usuarios WHERE usuario_id = ? AND perfil = 'medico'",
+                Integer.class, usuarioId);
+        return total != null && total > 0;
+    }
+
     public List<Profissional> listarMedicos() {
         return jdbcTemplate.query(
                 "SELECT usuario_id, nome FROM usuarios WHERE perfil = 'medico' ORDER BY nome",
