@@ -12,7 +12,7 @@ Este documento distingue implementação de validação. Os testes manuais já a
 - [x] Incorporar interface da Etapa 8, modelos da Etapa 6 e testes JUnit da Etapa 7.
 - [x] Criar migração incremental de pacientes; aplicada no MySQL local e conferida pela usuária.
 - [x] Implementar autenticação por sessão, BCrypt e migração de senha legada após login válido.
-- [x] Implementar proteção CSRF por token de sessão para operações POST, PUT e DELETE.
+- [x] Implementar proteção CSRF por token de sessão para login e operações POST, PUT e DELETE.
 - [x] Implementar autorização por perfil para estoque, histórico, usuários, relatórios e backups.
 - [x] Implementar consulta, pesquisa e cadastro de pacientes via JDBC; ID do usuário responsável vem da sessão.
 - [x] Integrar tela de cadastro, consulta, login, logout e contador do painel.
