@@ -35,7 +35,13 @@ public class PacienteJdbcRepository {
                     (rs, rowNum) -> mapear(rs));
         }
         String filtro = "%" + termo + "%";
-        String cpf = "%" + termo.replaceAll("\\D", "") + "%";
+        String somenteDigitos = termo.replaceAll("\\D", "");
+        if (somenteDigitos.isEmpty()) {
+            return jdbcTemplate.query(
+                    SELECT_BASE + " WHERE nome LIKE ? ORDER BY nome",
+                    (rs, rowNum) -> mapear(rs), filtro);
+        }
+        String cpf = "%" + somenteDigitos + "%";
         return jdbcTemplate.query(
                 SELECT_BASE + " WHERE nome LIKE ? OR REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') LIKE ? ORDER BY nome",
                 (rs, rowNum) -> mapear(rs), filtro, cpf);
