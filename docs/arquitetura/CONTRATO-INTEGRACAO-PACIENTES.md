@@ -16,7 +16,7 @@ inventada.
 
 - Nome: obrigatório, até 55 caracteres no formulário.
 - CPF: obrigatório no novo cadastro; normalizar para dígitos e armazenar
-  com máscara padronizada. Não aplicar validação matemática dos dígitos.
+  somente com dígitos (11 caracteres). A máscara é apenas de apresentação no navegador. Não aplicar validação matemática dos dígitos.
   Bloquear duplicidade no serviço e por índice UNIQUE no banco.
 - Nascimento: obrigatório, data válida e não futura. A idade é calculada
   na camada de serviço no momento da gravação para manter compatibilidade
@@ -28,15 +28,16 @@ inventada.
   Nunca aceitar esse identificador como dado confiável enviado pelo navegador
   e nunca assumir o ID 1.
 
-## API planejada
+## API implementada e pendente
 
-- `GET /api/pacientes` — lista; aceita `?busca=` para filtrar por nome ou CPF.
-- `GET /api/pacientes/{id}` — consulta um registro.
-- `POST /api/pacientes` — cria um registro.
-- `PUT /api/pacientes/{id}` — atualiza um registro.
-- `DELETE /api/pacientes/{id}` — exclui conforme regras de integridade.
+- `POST /api/auth/login`, `GET /api/auth/me` e `POST /api/auth/logout` — autenticação e sessão.
+- `GET /api/pacientes` — implementado; lista e aceita `?busca=` para filtrar por nome ou CPF. Exige sessão.
+- `GET /api/pacientes/{id}` — implementado; consulta um registro. Exige sessão.
+- `POST /api/pacientes` — implementado; cria um registro. Exige sessão e usa o ID do usuário autenticado.
+- `PUT /api/pacientes/{id}` — pendente.
+- `DELETE /api/pacientes/{id}` — pendente.
 
-As respostas devem usar DTOs e não expor entidades JDBC diretamente.
+As respostas usam DTOs e não expõem entidades JDBC diretamente. As telas de cadastro e consulta consomem os endpoints de pacientes; o fluxo não utiliza localStorage.
 A exclusão deve respeitar as FKs existentes: consultas e históricos ligados
 ao paciente possuem exclusão em cascata no esquema original; essa consequência
 deve ser informada e protegida por autorização antes de habilitar a operação.
