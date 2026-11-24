@@ -32,7 +32,7 @@ public class BackupBancoService {
 
     public Path gerarBackup() {
         try {
-            Files.createDirectories(diretorio);
+            try {\n                Files.createDirectories(diretorio);\n            } catch (IOException ex) {\n                throw new IllegalStateException("Não foi possível criar o diretório de backup.", ex);\n            }
             String nome = "medsinc-backup-" + LocalDateTime.now().format(
                     DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")) + ".sql";
             Path destino = diretorio.resolve(nome).normalize();
