@@ -36,5 +36,8 @@ application-local.yml
 Thumbs.db
 desktop.ini
 
+# Server backups (may contain personal data and password hashes)
+/backups/
+
 # Test / coverage outputs
 .coverage/
