@@ -43,7 +43,6 @@ public class BackupBancoService {
                     writer.write("SET FOREIGN_KEY_CHECKS=0;\n");
                     for (String tabela : tabelas(connection)) {
                         writer.write("\n-- Tabela " + tabela + "\n");
-                        writer.write("DELETE FROM `" + tabela + "`;\n");
                         try (Statement st = connection.createStatement();
                              ResultSet rs = st.executeQuery("SELECT * FROM `" + tabela + "`")) {
                             var meta = rs.getMetaData();
