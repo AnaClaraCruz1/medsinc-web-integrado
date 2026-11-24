@@ -31,7 +31,7 @@ A migração incremental adicionou CPF, nascimento, telefone, e-mail e convênio
 - Senhas legadas são comparadas em tempo constante e migradas para BCrypt após autenticação válida.
 - Novas senhas também são gravadas com BCrypt.
 - Cookie de sessão HttpOnly e SameSite=Lax.
-- `GET /api/auth/csrf` cria/retorna token da sessão; o filtro exige `X-CSRF-TOKEN` em POST, PUT e DELETE, exceto login e emissão do token.
+- `GET /api/auth/csrf` cria/retorna token da sessão; o filtro exige `X-CSRF-TOKEN` em POST, PUT e DELETE, inclusive login; somente a emissão do token é isenta.
 - Autorização por perfil: estoque (administrador/farmacêutico), histórico (administrador/médico), usuários e backups (administrador), relatórios (administrador/técnico).
 - As rotas de pacientes e consultas exigem sessão autenticada.
 
