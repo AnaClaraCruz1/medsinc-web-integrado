@@ -8,7 +8,7 @@
 <form id="patient-form" novalidate>
 <div class="form-grid">
 <div class="field field-span-2"><label for="patient-name">Nome completo *</label><input id="patient-name" name="nome" type="text" maxlength="55" placeholder="Nome completo do paciente" required><small class="field-hint">Até 55 caracteres.</small><small class="field-error" data-error-for="nome"></small></div>
-<div class="field"><label for="patient-cpf">CPF *</label><input id="patient-cpf" name="cpf" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" required><small class="field-hint">Campo demonstrativo: aceita CPF fictício, sem validar os dígitos ou bloquear números repetidos.</small><small class="field-error" data-error-for="cpf"></small></div>
+<div class="field"><label for="patient-cpf">CPF *</label><input id="patient-cpf" name="cpf" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" required><small class="field-hint">Não valida matematicamente os dígitos, mas não permite CPF duplicado.</small><small class="field-error" data-error-for="cpf"></small></div>
 <div class="field"><label for="patient-birth">Data de nascimento *</label><input id="patient-birth" name="nascimento" type="date" required><small class="field-error" data-error-for="nascimento"></small></div>
 <div class="field"><label for="patient-phone">Telefone *</label><input id="patient-phone" name="telefone" type="tel" maxlength="15" placeholder="(31)99999-9999" required><small class="field-error" data-error-for="telefone"></small></div>
 <div class="field"><label for="patient-email">E-mail</label><input id="patient-email" name="email" type="email" placeholder="paciente@email.com"><small class="field-error" data-error-for="email"></small></div>
