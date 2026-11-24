@@ -1,50 +1,54 @@
-# Inventário e plano de integração
+# Plano consolidado de integração — Etapa 9
 
-Este checklist evita repetir atividades concluídas anteriormente. Atualizar o status conforme código e evidências forem validados.
+Este documento distingue implementação de validação. Os testes manuais já aprovados em pacientes não devem ser repetidos sem necessidade de regressão.
 
 ## Fontes
 - Etapa 6 — https://github.com/AnaClaraCruz1/medsinc-refatorado
+- Etapa 7 — testes JUnit e plano de testes incorporados no projeto.
 - Etapa 8 — https://github.com/AnaClaraCruz1/medsinc-web
-- Etapa 7 — testes JUnit e plano de testes preservados no material da Etapa 6.
 
-## Integração
-
+## Implementação
 - [x] Criar projeto Maven Spring Boot.
-- [x] Incorporar interface da Etapa 8 em resources/static.
-- [x] Incorporar modelos de domínio e 17 métodos de teste das etapas anteriores.
-- [x] Definir DTO de resposta e endpoints GET de pacientes.
-- [x] Criar migração SQL incremental; usuária executou no MySQL local e confirmou as novas colunas e índice único de CPF.
-- [x] Implementar autenticação inicial por sessão: login, usuário atual e logout.
-- [x] Implementar verificação BCrypt e migração de senha legada para BCrypt após login válido.
-- [x] Conectar formulário de login ao endpoint de autenticação, aceitando também identificadores legados armazenados na coluna email.
-- [x] Proteger endpoints de leitura e cadastro de pacientes com a sessão.
-- [x] Implementar cadastro de pacientes pela API com validação server-side, CPF normalizado/único, idade calculada e usuário responsável derivado da sessão.
-- [x] Conectar telas de cadastro e consulta à API; o fluxo de pacientes deixou de usar localStorage.
-- [x] Conectar contador do painel à API e implementar logout.
-- [x] Exigir sessão nas páginas do painel e dos módulos.
-- [ ] Executar localmente os testes recém-adicionados de autenticação e cadastro.
-- [ ] Validar login com conta de teste autorizada e verificar /me e logout.
-- [ ] Testar cadastro de paciente com dados fictícios, duplicidade de CPF e validações.
-- [ ] Implementar edição e exclusão de pacientes pela API.
-- [ ] Implementar autorização por perfil e proteção CSRF dedicada.
-- [x] Implementar API JDBC de consultas: listagem com nomes relacionados, lista de médicos e cadastro com IDs reais de paciente/profissional.
-- [x] Substituir o formulário demonstrativo de consultas por tela conectada à API.
-- [x] Adicionar testes unitários para o serviço de consultas (execução local pendente).
-- [ ] Integrar estoque, histórico, usuários, relatórios e backups à persistência real.
-- [ ] Integrar testes de API/JDBC para fluxos novos.
+- [x] Incorporar interface da Etapa 8, modelos da Etapa 6 e testes JUnit da Etapa 7.
+- [x] Criar migração incremental de pacientes; aplicada no MySQL local e conferida pela usuária.
+- [x] Implementar autenticação por sessão, BCrypt e migração de senha legada após login válido.
+- [x] Implementar proteção CSRF por token de sessão para operações POST, PUT e DELETE.
+- [x] Implementar autorização por perfil para estoque, histórico, usuários, relatórios e backups.
+- [x] Implementar consulta, pesquisa e cadastro de pacientes via JDBC; ID do usuário responsável vem da sessão.
+- [x] Integrar tela de cadastro, consulta, login, logout e contador do painel.
+- [x] Implementar API JDBC de consultas e tela integrada, com relacionamento por IDs reais.
+- [x] Implementar estoque com listagem, cadastro, edição, exclusão e indicação de nível mínimo.
+- [x] Implementar histórico médico com listagem e cadastro relacionados a paciente e médico.
+- [x] Implementar gestão de usuários com listagem sem credenciais e cadastro com senha BCrypt.
+- [x] Implementar indicadores e registro de relatórios persistidos no MySQL.
+- [x] Implementar geração de backup SQL de dados no servidor e histórico de execução.
+- [x] Adicionar workflow GitHub Actions para validação de sintaxe JS e execução Maven.
+- [ ] Avaliar edição de pacientes; exclusão deve considerar histórico clínico e integridade referencial antes de ser permitida.
 
-## Validação e evidências
+## Validação já realizada
+- [x] Etapa 6: cinco testes aprovados, conforme histórico do projeto.
+- [x] Etapa 7: 17 testes de domínio aprovados, conforme histórico do projeto.
+- [x] Etapa 8: páginas e fluxo demonstrativo conferidos manualmente.
+- [x] Etapa 9, primeira rodada: 21 testes aprovados antes das alterações dos módulos.
+- [x] Etapa 9, pacientes: 29 testes aprovados localmente e 11 verificações manuais aprovadas, incluindo cadastro fictício, CPF duplicado, validações, login e proteção após logout.
+- [ ] CI do commit consolidado: aguardar resultado verde após correções identificadas.
+- [ ] Executar uma única validação local consolidada de `mvn clean test`.
+- [ ] Executar smoke tests integrados de cada módulo com dados fictícios, incluindo permissões por perfil e token CSRF.
+- [ ] Verificar geração, conteúdo e restauração controlada do backup em banco de teste isolado.
+- [ ] Conferir se a base local preserva os 16 registros antigos e o paciente fictício ID 20 usado nas evidências.
+- [ ] Preparar evidências de testes e versionamento.
+- [ ] Preparar ZIP final sem dumps, backups, senhas ou dados pessoais.
 
-- [x] Execução inicial local: 21 testes aprovados antes das alterações recentes.
-- [x] Inicialização local do Spring Boot na porta 8080.
-- [x] Páginas inicial e consulta abriram via servidor.
-- [x] GET de pacientes retornou 16 registros; busca inexistente retornou zero antes da exigência de sessão.
-- [ ] Executar mvn test após a implementação de consultas (inclui 6 testes novos ainda não executados localmente).
-- [ ] Executar os casos aplicáveis do plano de testes da Etapa 7.
-- [ ] Registrar defeitos reais no GitHub Issues com reprodução, esperado/obtido e correção.
-- [ ] Capturar evidências reais de testes e versionamento.
-- [ ] Atualizar documentação e preparar ZIP final.
+## Bugtracking
+- [x] Issue #1 criada para a falha real de compilação do diretório de backup detectada na CI.
+- [ ] Confirmar CI verde após a correção e encerrar a issue com referência ao commit corretivo.
+- [ ] Registrar outros defeitos somente se forem reproduzidos durante a validação consolidada.
+
+## Segurança e entrega
+- [x] Dumps de banco e arquivos de backup excluídos da estratégia de versionamento/entrega.
+- [x] Senhas não retornadas na listagem de usuários; novas senhas armazenadas com BCrypt.
+- [x] Backup gravado em diretório do servidor configurável por `MEDSINC_BACKUP_DIR`.
+- [ ] Revisar evidências para garantir que não contenham dados pessoais, CPFs ou credenciais.
 
 ## Regra de evidência
-
-Não marcar validação como concluída apenas porque existem arquivos. Cada item de validação exige execução real ou evidência verificável.
+Não marcar validação como concluída apenas porque existem arquivos ou endpoints. Cada item de validação exige execução real ou evidência verificável.
