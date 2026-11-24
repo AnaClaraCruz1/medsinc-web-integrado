@@ -25,7 +25,7 @@ class ConsultaServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new ConsultaService(repository);
+        service = new ConsultaService(repository);\n        lenient().when(repository.usuarioEhMedico(anyInt())).thenReturn(true);
     }
 
     @Test
