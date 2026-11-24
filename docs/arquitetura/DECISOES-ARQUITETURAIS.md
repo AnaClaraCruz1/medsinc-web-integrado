@@ -29,16 +29,24 @@ Aplicação Spring Boot com API REST e interface estática servida pelo próprio
 
 O formulário contém CPF, nascimento, telefone, e-mail e convênio; o esquema legado tinha apenas nome, idade, endereço e contato. A migração incremental adicionou as novas colunas, mantendo as antigas e os registros. A idade deve ser calculada a partir da data de nascimento para novos registros. CPF é normalizado e deve ser único, mas não passa por validação matemática dos dígitos, conforme decisão funcional.
 
-## Autenticação implementada inicialmente
+## Autenticação e sessão implementadas inicialmente
 
-- `POST /api/auth/login`: autentica pelo e-mail e senha da tabela `usuarios`, cria sessão HTTP e devolve somente ID, nome, e-mail e perfil.
+- `POST /api/auth/login`: autentica pela coluna `email` (aceita também identificadores legados) e senha da tabela `usuarios`, cria sessão HTTP e devolve somente ID, nome, e-mail e perfil.
 - `GET /api/auth/me`: consulta a identidade mantida na sessão.
 - `POST /api/auth/logout`: invalida a sessão.
 - Senhas legadas em texto simples são comparadas em tempo constante e migradas para BCrypt após autenticação válida. Hashes BCrypt existentes são verificados com o encoder.
 - Cookie de sessão configurado como HttpOnly e SameSite=Lax.
-- A interface inicial de login chama o endpoint real.
+- A interface inicial chama o endpoint real; painel e módulos verificam a sessão.
+- Endpoints de leitura e cadastro de pacientes exigem sessão.
 
-**Limite atual:** a autenticação ainda não protege todas as páginas nem todos os endpoints. Autorização por perfil, proteção CSRF e testes de ponta a ponta ainda precisam ser implementados antes de considerar a segurança concluída.
+**Limite atual:** autorização detalhada por perfil, proteção CSRF dedicada, limitação de tentativas e testes de ponta a ponta ainda precisam ser implementados antes de considerar a segurança concluída.
+
+## Cadastro de pacientes implementado inicialmente
+
+- `POST /api/pacientes` valida os campos no servidor, normaliza CPF para 11 dígitos, calcula idade e grava o usuário responsável a partir da sessão.
+- O índice UNIQUE do banco é a proteção final contra CPF duplicado; conflito retorna HTTP 409.
+- A tela de cadastro envia o formulário à API e a tela de consulta carrega os registros pela API.
+- A edição e a exclusão ainda não foram implementadas.
 
 ## Segurança e dados
 
