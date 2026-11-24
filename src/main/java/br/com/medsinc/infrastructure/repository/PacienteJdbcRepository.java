@@ -48,8 +48,8 @@ public class PacienteJdbcRepository {
         }
         String cpf = "%" + somenteDigitos + "%";
         return jdbcTemplate.query(
-                SELECT_BASE + " WHERE nome LIKE ? OR REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') LIKE ? ORDER BY nome",
-                (rs, rowNum) -> mapear(rs), filtro, cpf);
+                SELECT_BASE + " WHERE CAST(paciente_id AS CHAR) LIKE ? OR nome LIKE ? OR REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') LIKE ? ORDER BY nome",
+                (rs, rowNum) -> mapear(rs), filtro, filtro, cpf);
     }
 
     public Optional<PacienteResponse> buscarPorId(int id) {
