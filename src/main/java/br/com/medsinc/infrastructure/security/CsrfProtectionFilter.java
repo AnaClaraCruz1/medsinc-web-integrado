@@ -19,7 +19,6 @@ public class CsrfProtectionFilter extends OncePerRequestFilter {
         return "GET".equalsIgnoreCase(request.getMethod())
                 || "HEAD".equalsIgnoreCase(request.getMethod())
                 || "OPTIONS".equalsIgnoreCase(request.getMethod())
-                || "/api/auth/login".equals(path)
                 || "/api/auth/csrf".equals(path);
     }
 
