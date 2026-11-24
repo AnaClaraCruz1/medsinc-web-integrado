@@ -1,79 +1,76 @@
 # MEDSiNC — Aplicação Web Integrada
 
-Projeto Integrador da Etapa 9, reunindo back-end Java, persistência MySQL, interface web e testes das etapas anteriores.
+Projeto Integrador da Etapa 9: aplicação web Java com Spring Boot, API REST, persistência MySQL, interface integrada e testes automatizados das etapas anteriores.
 
 ## Tecnologias
-
-- Java 17 como versão-alvo (execução local anterior em Java 24.0.2)
+- Java 17 (compatível com execução local em Java 24)
 - Spring Boot 3.5.7, Spring Web, Spring JDBC e Bean Validation
-- MySQL, Maven, JUnit 5 e Mockito
+- MySQL 8, Maven, JUnit 5 e Mockito
 - HTML, CSS e JavaScript
 
 ## Configuração e execução
+A conexão utiliza as variáveis de ambiente `MEDSINC_DB_URL`, `MEDSINC_DB_USER` e `MEDSINC_DB_PASSWORD`. A aplicação não executa migrações automaticamente.
 
-A conexão utiliza as variáveis de ambiente MEDSINC_DB_URL, MEDSINC_DB_USER e MEDSINC_DB_PASSWORD. Não incluir credenciais, dumps com dados pessoais ou arquivos locais de configuração no Git. A aplicação não executa migrações automaticamente.
-
-Na pasta que contém pom.xml:
-
+Na pasta que contém `pom.xml`:
 ```powershell
-mvn test
+mvn clean test
 mvn spring-boot:run
 ```
+No Windows, se o Maven não estiver no PATH, use o executável Maven instalado com o NetBeans e configure `JAVA_HOME` apenas para a sessão do terminal. A aplicação é servida em http://localhost:8080.
 
-No Windows, se o Maven não estiver no PATH, pode-se chamar o executável Maven instalado com o NetBeans e configurar JAVA_HOME apenas para a sessão do terminal.
-
-A aplicação é servida em http://localhost:8080.
+O diretório de backups pode ser configurado por `MEDSINC_BACKUP_DIR`; o padrão é `./backups`. O processo Java precisa ter permissão de escrita nesse local.
 
 ## Organização
+- `api/controller` e `api/dto`: endpoints REST e contratos.
+- `application/service`: regras de negócio.
+- `infrastructure/repository`: persistência JDBC.
+- `infrastructure/security`: proteção CSRF.
+- `resources/static`: páginas, CSS e JavaScript.
+- `resources/db/migration`: migrações SQL manuais.
+- `src/test`: testes automatizados.
+- `docs`: arquitetura, contratos, plano e evidências.
 
-- api/controller e api/dto: endpoints REST e contratos.
-- application/service: regras de negócio.
-- infrastructure/repository: persistência JDBC.
-- resources/static: páginas e recursos web.
-- resources/db/migration: migrações SQL manuais.
-- src/test: testes automatizados.
-- docs: arquitetura, contratos, plano e evidências.
-
-## Autenticação e sessão
-
-- POST /api/auth/login: recebe JSON com email (ou identificador legado) e senha, valida contra a tabela usuarios e cria sessão HTTP.
-- GET /api/auth/me: retorna somente ID, nome, e-mail e perfil da sessão.
-- POST /api/auth/logout: invalida a sessão.
-- Senhas legadas em texto simples são verificadas por compatibilidade e atualizadas para BCrypt após autenticação válida. Hashes BCrypt existentes são verificados sem alteração.
+## Autenticação e segurança
+- `POST /api/auth/login`, `GET /api/auth/me` e `POST /api/auth/logout` gerenciam a sessão.
+- `GET /api/auth/csrf` emite token associado à sessão. Requisições POST, PUT e DELETE exigem o cabeçalho `X-CSRF-TOKEN`.
 - O cookie de sessão é HttpOnly e SameSite=Lax.
-- As páginas de painel/módulos e os endpoints de pacientes exigem sessão. O formulário de login, o botão de saída e a navegação de pacientes usam os endpoints reais.
+- Senhas legadas são migradas para BCrypt após login válido; novas senhas também são armazenadas com BCrypt.
+- Respostas de usuários nunca incluem hashes ou senhas.
+- Estoque: administrador e farmacêutico.
+- Histórico médico: administrador e médico.
+- Usuários e backups: somente administrador.
+- Relatórios: administrador e técnico.
+- Os demais endpoints exigem sessão autenticada.
 
-A autorização detalhada por perfil, proteção CSRF dedicada, limitação de tentativas e testes ponta a ponta ainda são pendências antes de qualquer uso em produção.
+Esta é uma implementação acadêmica. Antes de produção, ainda são necessários hardening, limitação de tentativas, política de retenção, revisão de permissões e testes de segurança independentes.
 
-## Pacientes
+## Módulos integrados
+| Módulo | Operações principais |
+|---|---|
+| Pacientes | Consulta, pesquisa e cadastro via API; CPF único e idade calculada no servidor |
+| Consultas | Listagem, pesquisa, seleção de paciente/médico por ID e cadastro |
+| Estoque | Listagem, cadastro, edição e exclusão; cálculo de nível mínimo |
+| Histórico médico | Listagem e cadastro vinculados a paciente e médico |
+| Usuários | Listagem sem credenciais e cadastro administrativo com senha BCrypt |
+| Relatórios | Indicadores calculados no MySQL e registro de relatórios |
+| Backups | Geração de arquivo SQL de dados no servidor e histórico no MySQL |
 
-- GET /api/pacientes e GET /api/pacientes/{id}: listagem, pesquisa e consulta autenticadas.
-- POST /api/pacientes: cadastro autenticado; o ID do usuário responsável vem da sessão, nunca do navegador.
-- CPF é armazenado normalizado com 11 dígitos e protegido por índice único. Não há validação matemática dos dígitos verificadores, conforme decisão funcional.
-- A idade é calculada no servidor a partir da data de nascimento.
-- A migração incremental adicionou CPF, nascimento, telefone, e-mail e convênio sem remover colunas antigas.
+O backup é um arquivo SQL de dados e pressupõe que o esquema do projeto já exista no banco de destino. O arquivo contém dados pessoais e hashes de senha: mantenha-o em diretório protegido, não o publique no GitHub e não o inclua no ZIP acadêmico. O script de esquema e a migração estão em `docs/banco-de-dados` e `src/main/resources/db/migration`.
 
-Edição e exclusão de pacientes ainda estão pendentes. Os demais módulos continuam demonstrativos e serão integrados em etapas posteriores.
+## Pacientes e banco legado
+A migração incremental adicionou CPF, nascimento, telefone, e-mail e convênio sem remover as colunas legadas nem os registros existentes. Registros antigos podem permanecer sem CPF. CPF é normalizado e protegido por índice único; não há validação matemática dos dígitos verificadores, conforme decisão funcional. O ID do usuário responsável vem da sessão, nunca do navegador.
 
 ## Materiais incorporados
-
-- Interface da Etapa 8: cinco páginas HTML, CSS e JavaScript.
+- Interface da Etapa 8.
 - Modelos de domínio da Etapa 6.
 - Testes JUnit da Etapa 7: PacienteTest, ConsultaTest e ItemEstoqueTest (17 métodos).
 - Plano de testes e script SQL original.
 
 Fontes: https://github.com/AnaClaraCruz1/medsinc-refatorado/tree/atividade-7 e https://github.com/AnaClaraCruz1/medsinc-web.
 
-## Validações locais registradas em 24/11/2026
+## Validação
+Antes das últimas implementações, a execução local registrada em 24/11/2026 teve 21 testes aprovados, servidor Spring Boot iniciado na porta 8080 e fluxo de pacientes validado manualmente. Os novos módulos ainda aguardam a validação consolidada no ambiente local.
 
-Antes das últimas alterações:
-- mvn test: 21 testes executados, zero falhas/erros/ignorados, BUILD SUCCESS.
-- mvn spring-boot:run: servidor iniciado na porta 8080.
-- Páginas inicial e consulta abriram pelo servidor.
-- API de pacientes retornou 16 registros e pesquisa inexistente retornou zero.
+O repositório contém workflow GitHub Actions para validar sintaxe JavaScript e executar `mvn clean test` em Java 17. A conclusão da etapa exige CI verde, execução local integrada, evidências reais, registro e correção de defeitos encontrados e preparação do ZIP final.
 
-As novas classes, testes, autenticação e cadastro ainda precisam ser executados localmente. Não considerar os novos fluxos validados até a execução posterior.
-
-## Entrega
-
-A conclusão depende de testes integrados, evidências reais, registro de defeitos encontrados e preparação do ZIP final. Usar somente dados fictícios nas capturas e arquivos de entrega.
+Use somente dados fictícios nas capturas e nos arquivos de entrega.
