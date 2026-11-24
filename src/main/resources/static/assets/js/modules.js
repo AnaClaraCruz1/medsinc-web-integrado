@@ -47,5 +47,16 @@ function renderBackups(root,cfg){
  const form=root.querySelector("#backup-form");function draw(){const list=rows("backups");root.querySelector("#backup-list").innerHTML=list.length?'<ul class="backup-list">'+list.map(x=>'<li><strong>'+esc(x.descricao)+'</strong> — '+esc(x.responsavel)+' <small>'+new Date(x.criadoEm).toLocaleString("pt-BR")+'</small></li>').join("")+'</ul>':'<p class="empty-state">Nenhuma atividade registrada.</p>'}
  form.addEventListener("submit",e=>{e.preventDefault();const d=Object.fromEntries(new FormData(form)),db=read();db.backups=rows("backups");db.backups.push({id:Math.max(0,...db.backups.map(x=>x.id))+1,...d,criadoEm:new Date().toISOString()});const ok=write(db);root.querySelector("#backup-feedback").textContent=ok?"Atividade registrada.":"Falha ao registrar.";if(ok){form.reset();draw()}});draw();
 }
-document.addEventListener("DOMContentLoaded",init);
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    const resposta = await fetch("/api/auth/me", { credentials: "same-origin" });
+    if (!resposta.ok) {
+      window.location.replace("../");
+      return;
+    }
+    init();
+  } catch (erro) {
+    window.location.replace("../");
+  }
+});
 })();
