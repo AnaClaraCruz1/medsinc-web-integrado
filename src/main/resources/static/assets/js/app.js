@@ -119,6 +119,17 @@ function configurarLogin() {
   });
 }
 
+async function verificarSessao() {
+  try {
+    const resposta = await fetch("/api/auth/me", { credentials: "same-origin" });
+    if (resposta.ok) return true;
+  } catch (erro) {
+    console.warn("Não foi possível validar a sessão.", erro);
+  }
+  window.location.replace("/");
+  return false;
+}
+
 function configurarCadastro() {
   const form = document.getElementById("patient-form");
   if (!form) return;
@@ -129,7 +140,7 @@ function configurarCadastro() {
   form.addEventListener("reset", () => {
     setTimeout(() => { limparErros(); const feedback = document.getElementById("patient-feedback"); feedback.textContent = ""; feedback.className = "form-feedback"; }, 0);
   });
-  form.addEventListener("submit", evento => {
+  form.addEventListener("submit", async evento => {
     evento.preventDefault();
     limparErros();
     const dados = Object.fromEntries(new FormData(form).entries());
@@ -137,7 +148,7 @@ function configurarCadastro() {
     const falhar = (campo, mensagem) => { exibirErro(campo, mensagem); valido = false; };
     if (!dados.nome.trim()) falhar("nome", "Informe o nome completo.");
     if (dados.nome.trim().length > 55) falhar("nome", "Use no máximo 55 caracteres.");
-    if (obterPacientes().some(p => somenteNumeros(p.cpf) === somenteNumeros(dados.cpf))) falhar("cpf", "Este CPF já está cadastrado.");
+    if (somenteNumeros(dados.cpf).length !== 11) falhar("cpf", "Informe 11 dígitos para o CPF.");
     if (!dados.nascimento) falhar("nascimento", "Informe a data de nascimento.");
     else {
       const data = new Date(dados.nascimento + "T00:00:00");
@@ -150,20 +161,57 @@ function configurarCadastro() {
     if (dados.endereco.trim().length > 200) falhar("endereco", "Use no máximo 200 caracteres.");
     if (!dados.convenio) falhar("convenio", "Selecione um convênio.");
     const feedback = document.getElementById("patient-feedback");
+    const botao = form.querySelector('button[type="submit"]');
     if (!valido) {
       feedback.textContent = "Revise os campos destacados antes de salvar.";
       feedback.className = "form-feedback error";
       return;
     }
-    const pacientes = obterPacientes();
-    const novo = { id: pacientes.reduce((maior, p) => Math.max(maior, Number(p.id) || 0), 0) + 1, ...dados, nome: dados.nome.trim(), cpf: formatarCPF(dados.cpf), endereco: dados.endereco.trim(), telefone: formatarTelefone(dados.telefone) };
-    pacientes.push(novo);
-    const persistido = salvarPacientes(pacientes);
-    form.reset();
-    feedback.textContent = persistido
-      ? "Paciente cadastrado nesta demonstração com sucesso."
-      : "Cadastro mantido apenas nesta sessão; o navegador não permitiu salvar os dados.";
+    botao.disabled = true;
+    feedback.textContent = "Salvando paciente no banco de dados...";
     feedback.className = "form-feedback";
+    try {
+      const resposta = await fetch("/api/pacientes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          nome: dados.nome.trim(),
+          cpf: dados.cpf,
+          nascimento: dados.nascimento,
+          telefone: dados.telefone,
+          email: dados.email.trim() || null,
+          endereco: dados.endereco.trim(),
+          convenio: dados.convenio
+        })
+      });
+      if (resposta.status === 401) {
+        window.location.replace("/");
+        return;
+      }
+      if (resposta.status === 409) {
+        exibirErro("cpf", "Este CPF já está cadastrado.");
+        feedback.textContent = "Não foi possível cadastrar: CPF duplicado.";
+        feedback.className = "form-feedback error";
+        return;
+      }
+      if (!resposta.ok) {
+        feedback.textContent = resposta.status === 400
+          ? "Confira os dados informados. O servidor recusou o cadastro."
+          : "Não foi possível salvar o paciente. Tente novamente.";
+        feedback.className = "form-feedback error";
+        return;
+      }
+      const criado = await resposta.json();
+      form.reset();
+      feedback.textContent = "Paciente #" + criado.id + " cadastrado no banco de dados com sucesso.";
+      feedback.className = "form-feedback";
+    } catch (erro) {
+      feedback.textContent = "Falha de comunicação com o servidor. Nenhuma confirmação de cadastro foi recebida.";
+      feedback.className = "form-feedback error";
+    } finally {
+      botao.disabled = false;
+    }
   });
 }
 
@@ -177,22 +225,40 @@ function configurarConsulta() {
   const campo = document.getElementById("patient-search");
   const contador = document.getElementById("result-count");
   const feedback = document.getElementById("search-feedback");
-  const renderizar = () => {
-    const termo = campo.value.trim().toLocaleLowerCase("pt-BR");
-    const registros = obterPacientes().filter(p => {
-      if (!termo) return true;
-      const buscaNumerica = somenteNumeros(termo);
-      const nome = String(p.nome || "").toLocaleLowerCase("pt-BR");
-      return String(p.id).includes(termo)
-        || (buscaNumerica.length > 0 && somenteNumeros(p.cpf).includes(buscaNumerica))
-        || nome.includes(termo);
-    });
-    contador.textContent = registros.length + (registros.length === 1 ? " registro encontrado" : " registros encontrados");
-    tabela.innerHTML = registros.length ? registros.map(p => '<tr><td class="table-id">#' + escaparHTML(p.id) + '</td><td class="table-name">' + escaparHTML(p.nome) + '</td><td>' + escaparHTML(p.cpf) + '</td><td>' + escaparHTML(formatarData(p.nascimento)) + '</td><td>' + escaparHTML(calcularIdade(p.nascimento)) + '</td><td>' + escaparHTML(p.telefone) + '</td><td><span class="status-pill">' + escaparHTML(p.convenio) + '</span></td></tr>').join("") : '<tr><td colspan="7" class="empty-state">Nenhum paciente corresponde à pesquisa.</td></tr>';
-    feedback.textContent = termo ? "Filtro aplicado aos registros demonstrativos." : "";
+  let requisicaoAtual = 0;
+
+  const renderizar = async () => {
+    const numeroRequisicao = ++requisicaoAtual;
+    const termo = campo.value.trim();
+    contador.textContent = "Consultando banco de dados...";
+    feedback.textContent = "";
+    try {
+      const resposta = await fetch("/api/pacientes?busca=" + encodeURIComponent(termo), {
+        credentials: "same-origin"
+      });
+      if (resposta.status === 401) {
+        window.location.replace("/");
+        return;
+      }
+      if (!resposta.ok) throw new Error("Falha ao consultar pacientes.");
+      const registros = await resposta.json();
+      if (numeroRequisicao !== requisicaoAtual) return;
+      contador.textContent = registros.length + (registros.length === 1 ? " registro encontrado" : " registros encontrados");
+      tabela.innerHTML = registros.length ? registros.map(p => '<tr><td class="table-id">#' + escaparHTML(p.id) + '</td><td class="table-name">' + escaparHTML(p.nome) + '</td><td>' + escaparHTML(p.cpf ? formatarCPF(p.cpf) : "—") + '</td><td>' + escaparHTML(formatarData(p.nascimento)) + '</td><td>' + escaparHTML(p.idade ?? "—") + '</td><td>' + escaparHTML(p.telefone || "—") + '</td><td><span class="status-pill">' + escaparHTML(p.convenio || "—") + '</span></td></tr>').join("") : '<tr><td colspan="7" class="empty-state">Nenhum paciente corresponde à pesquisa.</td></tr>';
+    } catch (erro) {
+      contador.textContent = "Consulta indisponível";
+      tabela.innerHTML = '<tr><td colspan="7" class="empty-state">Não foi possível carregar os pacientes do servidor.</td></tr>';
+      feedback.textContent = "Verifique a conexão e tente novamente.";
+      feedback.className = "form-feedback error";
+    }
   };
+
   campo.addEventListener("input", renderizar);
-  document.getElementById("clear-search").addEventListener("click", () => { campo.value = ""; renderizar(); campo.focus(); });
+  document.getElementById("clear-search").addEventListener("click", () => {
+    campo.value = "";
+    renderizar();
+    campo.focus();
+  });
   renderizar();
 }
 
@@ -201,8 +267,10 @@ function configurarPainel() {
   if (contador) contador.textContent = obterPacientes().length;
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   configurarLogin();
+  if (document.getElementById("login-form")) return;
+  if (!await verificarSessao()) return;
   configurarCadastro();
   configurarConsulta();
   configurarPainel();
