@@ -66,6 +66,16 @@ Não incluir credenciais no código-fonte ou no repositório. O script de banco 
 - Dados fictícios devem ser usados nas evidências.
 - A autenticação e as permissões serão implementadas e testadas antes de serem consideradas funcionais.
 
+## Materiais já incorporados
+
+- Interface da Etapa 8: cinco páginas HTML, folhas CSS e scripts JavaScript em `src/main/resources/static/`.
+- Modelos de domínio da Etapa 6: paciente, consulta, item de estoque, histórico médico e usuário.
+- Testes JUnit da Etapa 7: classes `PacienteTest`, `ConsultaTest` e `ItemEstoqueTest` (17 métodos de teste).
+- Plano de testes da Atividade 7 e script SQL original, preservados em `docs/`.
+- Projeto Maven configurado com Spring Boot 3.5.7 e Java 17.
+
+Fontes: [Etapa 6 e Atividade 7](https://github.com/AnaClaraCruz1/medsinc-refatorado/tree/atividade-7) e [Etapa 8](https://github.com/AnaClaraCruz1/medsinc-web).
+
 ## Status
 
-**Em organização e integração.** A presença de arquivos neste repositório não significa, por si só, que funcionalidades já estejam implementadas ou testadas.
+**Estrutura inicial e incorporação de fontes concluídas.** Ainda não foram implementados os endpoints REST nem a integração dos formulários com o banco. O projeto ainda precisa ser compilado e executado no ambiente local; não considerar os testes como reexecutados nesta etapa até que isso seja feito.
