@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ConsultaService {
-
     private final ConsultaJdbcRepository repository;
 
     public ConsultaService(ConsultaJdbcRepository repository) {
@@ -33,13 +32,14 @@ public class ConsultaService {
         if (dados.data().isBefore(LocalDate.of(1900, 1, 1))) {
             throw new IllegalArgumentException("A data da consulta é inválida.");
         }
-        if (!repository.usuarioEhMedico(dados.medicoId())) {
-            throw new IllegalArgumentException("O profissional selecionado não possui perfil médico.");
-        }
+        String status = dados.status() == null || dados.status().isBlank()
                 ? "agendada"
                 : dados.status().trim().toLowerCase(Locale.ROOT);
         if (!List.of("agendada", "realizada", "cancelada").contains(status)) {
             throw new IllegalArgumentException("Status de consulta inválido.");
+        }
+        if (!repository.usuarioEhMedico(dados.medicoId())) {
+            throw new IllegalArgumentException("O profissional selecionado não possui perfil médico.");
         }
         repository.inserir(
                 dados.pacienteId(),
