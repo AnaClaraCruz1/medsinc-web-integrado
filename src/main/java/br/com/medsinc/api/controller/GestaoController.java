@@ -32,11 +32,11 @@ public class GestaoController {
     }
 
     @GetMapping("/estoque")
-    public List<Map<String,Object>> estoque(HttpServletRequest req) { exigir(req); return repository.listarEstoque(); }
+    public List<Map<String,Object>> estoque(HttpServletRequest req) { exigirPerfil(req, "administrador", "farmaceutico"); return repository.listarEstoque(); }
 
     @PostMapping("/estoque")
     public ResponseEntity<Void> criarEstoque(@RequestBody EstoqueRequest body, HttpServletRequest req) {
-        int usuario = exigir(req);
+        int usuario = exigirPerfil(req, "administrador", "farmaceutico");
         validarTexto(body.nome(), "Nome do item", 150);
         validarTexto(body.unidade(), "Unidade", 50);
         validarQuantidades(body.quantidade(), body.minimo());
@@ -46,7 +46,7 @@ public class GestaoController {
 
     @PutMapping("/estoque/{id}")
     public void atualizarEstoque(@PathVariable int id, @RequestBody EstoqueRequest body, HttpServletRequest req) {
-        int usuario = exigir(req); if (id <= 0) throw erro(HttpStatus.BAD_REQUEST, "ID inválido.");
+        int usuario = exigirPerfil(req, "administrador", "farmaceutico"); if (id <= 0); if (id <= 0) throw erro(HttpStatus.BAD_REQUEST, "ID inválido.");
         validarTexto(body.nome(), "Nome do item", 150); validarTexto(body.unidade(), "Unidade", 50);
         validarQuantidades(body.quantidade(), body.minimo());
         try { repository.atualizarEstoque(id, body.nome().trim(), body.quantidade(), body.unidade().trim(), body.minimo(), usuario); }
@@ -55,17 +55,17 @@ public class GestaoController {
 
     @DeleteMapping("/estoque/{id}")
     public void excluirEstoque(@PathVariable int id, HttpServletRequest req) {
-        exigir(req); try { repository.excluirEstoque(id); } catch (IllegalArgumentException ex) { throw erro(HttpStatus.NOT_FOUND, ex.getMessage()); }
+        exigirPerfil(req, "administrador", "farmaceutico"); try { repository.excluirEstoque(id); } catch (IllegalArgumentException ex) { throw erro(HttpStatus.NOT_FOUND, ex.getMessage()); }
     }
 
     @GetMapping("/historicos")
     public List<Map<String,Object>> historicos(@RequestParam(required=false) String busca, HttpServletRequest req) {
-        exigir(req); return repository.listarHistoricos(busca);
+        exigirPerfil(req, "administrador", "medico"); return repository.listarHistoricos(busca);
     }
 
     @PostMapping("/historicos")
     public ResponseEntity<Void> criarHistorico(@RequestBody HistoricoRequest body, HttpServletRequest req) {
-        exigir(req);
+        exigirPerfil(req, "administrador", "medico");
         if (body.pacienteId() == null || body.pacienteId() <= 0 || body.medicoId() == null || body.medicoId() <= 0)
             throw erro(HttpStatus.BAD_REQUEST, "Selecione paciente e profissional.");
         validarTexto(body.descricao(), "Descrição", 10000);
@@ -93,15 +93,15 @@ public class GestaoController {
     }
 
     @GetMapping("/relatorios/resumo")
-    public Map<String,Object> resumo(HttpServletRequest req) { exigir(req); return repository.resumoRelatorios(); }
+    public Map<String,Object> resumo(HttpServletRequest req) { exigirPerfil(req, "administrador", "tecnico"); return repository.resumoRelatorios(); }
 
     @GetMapping("/relatorios")
-    public List<Map<String,Object>> relatorios(HttpServletRequest req) { exigir(req); return repository.listarRelatorios(); }
+    public List<Map<String,Object>> relatorios(HttpServletRequest req) { exigirPerfil(req, "administrador", "tecnico"); return repository.listarRelatorios(); }
 
     @PostMapping("/relatorios")
     public ResponseEntity<Void> gerarRelatorio(@RequestBody RelatorioRequest body, HttpServletRequest req) {
-        int usuario = exigir(req);
-        if (!Set.of("desempenho", "atividades").contains(body.tipo())) throw erro(HttpStatus.BAD_REQUEST, "Tipo de relatório inválido.");
+        int usuario = exigirPerfil(req, "administrador", "tecnico");
+        if (body.tipo() == null || !Set.of("desempenho", "atividades").contains(body.tipo())) throw erro(HttpStatus.BAD_REQUEST, "Tipo de relatório inválido.");
         String descricao = body.descricao() == null || body.descricao().isBlank()
                 ? "Relatório " + body.tipo() + " gerado em " + java.time.LocalDate.now()
                 : body.descricao().trim();
@@ -129,6 +129,12 @@ public class GestaoController {
         HttpSession s = req.getSession(false);
         if (s == null || !(s.getAttribute("usuarioId") instanceof Integer id)) throw erro(HttpStatus.UNAUTHORIZED, "Autenticação necessária.");
         return id;
+    }
+    private int exigirPerfil(HttpServletRequest req, String... perfis) {
+        int id = exigir(req);
+        String perfil = (String) req.getSession(false).getAttribute("usuarioPerfil");
+        for (String permitido : perfis) if (permitido.equals(perfil)) return id;
+        throw erro(HttpStatus.FORBIDDEN, "Seu perfil não tem permissão para esta operação.");
     }
     private int exigirAdmin(HttpServletRequest req) {
         int id = exigir(req); HttpSession s = req.getSession(false);
