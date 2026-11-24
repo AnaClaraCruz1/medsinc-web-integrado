@@ -25,6 +25,7 @@ class ConsultaServiceTest {
 
     @BeforeEach
     void setUp() {
+        service = new ConsultaService(repository);
         lenient().when(repository.usuarioEhMedico(anyInt())).thenReturn(true);
     }
 
@@ -75,6 +76,16 @@ class ConsultaServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> service.cadastrar(request));
         verifyNoInteractions(repository);
+    }
+
+    @Test
+    void deveRejeitarUsuarioQueNaoSejaMedico() {
+        when(repository.usuarioEhMedico(99)).thenReturn(false);
+        var request = new ConsultaCadastroRequest(
+                2, 99, LocalDate.of(2026, 12, 1), LocalTime.of(9, 30), "agendada");
+
+        assertThrows(IllegalArgumentException.class, () -> service.cadastrar(request));
+        verify(repository, never()).inserir(anyInt(), anyInt(), any(), any(), anyString());
     }
 
     @Test
