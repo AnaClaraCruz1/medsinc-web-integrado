@@ -33,7 +33,9 @@ public class ConsultaService {
         if (dados.data().isBefore(LocalDate.of(1900, 1, 1))) {
             throw new IllegalArgumentException("A data da consulta é inválida.");
         }
-        if (!repository.usuarioEhMedico(dados.medicoId())) {\n            throw new IllegalArgumentException("O profissional selecionado não possui perfil médico.");\n        }\n        String status = dados.status() == null || dados.status().isBlank()
+        if (!repository.usuarioEhMedico(dados.medicoId())) {
+            throw new IllegalArgumentException("O profissional selecionado não possui perfil médico.");
+        }
                 ? "agendada"
                 : dados.status().trim().toLowerCase(Locale.ROOT);
         if (!List.of("agendada", "realizada", "cancelada").contains(status)) {
