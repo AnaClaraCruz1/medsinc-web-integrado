@@ -2,49 +2,52 @@
 
 ## Decisão arquitetural
 
-A solução será organizada como uma aplicação Spring Boot com API REST e interface estática servida pelo próprio Spring Boot. O navegador consumirá os endpoints JSON por `fetch()`. Essa abordagem mantém a interface da Etapa 8 e evita introduzir um segundo servidor web durante a entrega.
+Aplicação Spring Boot com API REST e interface estática servida pelo próprio Spring Boot. O navegador consome endpoints JSON por `fetch()`, mantendo a interface da Etapa 8 no mesmo servidor.
 
 ## Camadas
 
 | Camada | Responsabilidade |
 |---|---|
-| `controller` | Endpoints REST, códigos HTTP e validação de entrada |
-| `dto` | Contratos de requisição e resposta; não expor entidades JDBC diretamente |
-| `service` | Regras de negócio e coordenação dos casos de uso |
-| `repository` | Contratos de persistência |
-| `repository.jdbc` | Implementações JDBC e mapeamento SQL |
-| `model` | Entidades e enums de domínio |
-| `config` | Configuração de banco, CORS e segurança |
-| `exception` | Exceções de negócio e respostas padronizadas |
-| `resources/static` | HTML, CSS e JavaScript da Etapa 8 |
-| `resources/db` | Script/migrações e dados estritamente fictícios de desenvolvimento |
+| `api/controller` | Endpoints REST, códigos HTTP e validação de entrada |
+| `api/dto` | Contratos de requisição e resposta |
+| `application/service` | Regras de negócio e casos de uso |
+| `infrastructure/repository` | Persistência JDBC |
+| `domain/model` | Entidades e enums de domínio |
+| `resources/static` | HTML, CSS e JavaScript |
+| `resources/db` | Migrações SQL manuais |
 
-## Regras de integração
+## Decisões e regras
 
-1. Reaproveitar os componentes de domínio, serviços, contratos de repositório e JDBC da Etapa 6 quando compatíveis; adaptar com mudanças pequenas e justificadas.
-2. Preservar os testes JUnit da Etapa 7 e executá-los no projeto integrado. Não substituir testes aprovados por cópias com menor cobertura.
-3. Manter os arquivos da Etapa 8 como base visual; substituir progressivamente o armazenamento demonstrativo em `localStorage` por chamadas à API.
-4. Usar DTOs para desacoplar o formato do formulário do esquema relacional.
-5. Consultas e histórico devem trafegar com identificadores relacionais, mesmo quando a interface exibir nomes.
-6. A identidade do usuário autenticado deve determinar campos de auditoria como `atualizado_por`; não fixar IDs no código.
-7. Não expor credenciais, hashes de senha ou dados pessoais em respostas, logs ou evidências.
+1. Reaproveitar componentes validados da Etapa 6 e preservar os 17 testes JUnit da Etapa 7.
+2. Manter a interface da Etapa 8 e substituir progressivamente o armazenamento demonstrativo por chamadas à API.
+3. Usar DTOs; não expor entidades JDBC diretamente.
+4. Consultas e histórico devem trafegar com IDs relacionais, mesmo quando a interface exibir nomes.
+5. Identidade autenticada deve determinar os campos de auditoria; nunca fixar IDs de usuário.
+6. Não expor credenciais, hashes ou dados pessoais em respostas, logs ou evidências.
 
-## Pontos que exigem compatibilização
+## Compatibilização de pacientes
 
-- O formulário web de paciente contém CPF, data de nascimento, telefone, e-mail e convênio, enquanto o modelo/tabela original da Etapa 6 contém um conjunto menor de campos. A decisão de persistência deverá preservar os dados existentes e documentar a migração.
-- O front-end bloqueia CPF duplicado, mas não valida matematicamente os dígitos verificadores. Essa regra deve permanecer coerente com a decisão funcional já tomada.
-- A autenticação demonstrativa da interface deverá ser substituída por autenticação real; a senha será armazenada com hash apropriado.
-- Estoque, consultas, relatórios e backups precisam ser ligados à persistência real ou ter seu escopo explicitamente delimitado na documentação.
+O formulário contém CPF, nascimento, telefone, e-mail e convênio; o esquema legado tinha apenas nome, idade, endereço e contato. A migração incremental adicionou as novas colunas, mantendo as antigas e os registros. A idade deve ser calculada a partir da data de nascimento para novos registros. CPF é normalizado e deve ser único, mas não passa por validação matemática dos dígitos, conforme decisão funcional.
 
-## Segurança
+## Autenticação implementada inicialmente
 
-- Configurar a conexão exclusivamente por variáveis de ambiente.
-- Não versionar arquivos locais de configuração ou credenciais.
-- Aplicar hash de senha (por exemplo, BCrypt) e não registrar senhas em logs.
-- Validar entradas no servidor, mesmo que o navegador também valide.
-- Definir autorização por perfil antes de liberar operações administrativas.
-- Usar dados fictícios em testes e capturas de tela.
+- `POST /api/auth/login`: autentica pelo e-mail e senha da tabela `usuarios`, cria sessão HTTP e devolve somente ID, nome, e-mail e perfil.
+- `GET /api/auth/me`: consulta a identidade mantida na sessão.
+- `POST /api/auth/logout`: invalida a sessão.
+- Senhas legadas em texto simples são comparadas em tempo constante e migradas para BCrypt após autenticação válida. Hashes BCrypt existentes são verificados com o encoder.
+- Cookie de sessão configurado como HttpOnly e SameSite=Lax.
+- A interface inicial de login chama o endpoint real.
 
-## Critérios de conclusão
+**Limite atual:** a autenticação ainda não protege todas as páginas nem todos os endpoints. Autorização por perfil, proteção CSRF e testes de ponta a ponta ainda precisam ser implementados antes de considerar a segurança concluída.
 
-A arquitetura só será considerada implementada quando houver código, testes executados e evidências correspondentes. Este documento registra decisões iniciais, não certifica funcionalidades concluídas.
+## Segurança e dados
+
+- Credenciais somente por variáveis de ambiente.
+- Validar entradas no servidor.
+- Não versionar dumps ou dados pessoais.
+- Usar dados fictícios em testes e capturas.
+- Migrações SQL manuais; não são executadas automaticamente pela aplicação.
+
+## Critério de conclusão
+
+Uma funcionalidade só será considerada concluída após código, execução de testes e evidência correspondente. Este documento registra decisões e o estado parcial da implementação, não certifica funcionalidades ainda não testadas.
