@@ -1,61 +1,51 @@
-# Arquitetura inicial — MEDSiNC Web Integrado
+# Arquitetura — MEDSiNC Web Integrado
 
 ## Decisão arquitetural
-
 Aplicação Spring Boot com API REST e interface estática servida pelo próprio Spring Boot. O navegador consome endpoints JSON por `fetch()`, mantendo a interface da Etapa 8 no mesmo servidor.
 
 ## Camadas
-
 | Camada | Responsabilidade |
 |---|---|
 | `api/controller` | Endpoints REST, códigos HTTP e validação de entrada |
 | `api/dto` | Contratos de requisição e resposta |
 | `application/service` | Regras de negócio e casos de uso |
 | `infrastructure/repository` | Persistência JDBC |
-| `domain/model` | Entidades e enums de domínio |
+| `infrastructure/security` | Filtro de proteção CSRF |
+| `domain/model` | Modelos de domínio |
 | `resources/static` | HTML, CSS e JavaScript |
 | `resources/db` | Migrações SQL manuais |
 
-## Decisões e regras
+## Regras de integração
+1. Reaproveitar componentes validados da Etapa 6 e preservar os 17 métodos de teste da Etapa 7.
+2. Manter a interface da Etapa 8 e consumir os dados pela API; os módulos integrados não dependem de localStorage para persistência.
+3. Usar DTOs e projeções; não expor credenciais ou hashes.
+4. Consultas e histórico trafegam com IDs relacionais, mesmo quando a interface exibe nomes.
+5. Identidade autenticada determina os campos de auditoria; nunca fixar IDs de usuário no navegador.
+6. Migrações são manuais e devem ser aplicadas uma única vez conforme instruções.
 
-1. Reaproveitar componentes validados da Etapa 6 e preservar os 17 testes JUnit da Etapa 7.
-2. Manter a interface da Etapa 8 e substituir progressivamente o armazenamento demonstrativo por chamadas à API.
-3. Usar DTOs; não expor entidades JDBC diretamente.
-4. Consultas e histórico devem trafegar com IDs relacionais, mesmo quando a interface exibir nomes.
-5. Identidade autenticada deve determinar os campos de auditoria; nunca fixar IDs de usuário.
-6. Não expor credenciais, hashes ou dados pessoais em respostas, logs ou evidências.
+## Pacientes
+A migração incremental adicionou CPF, nascimento, telefone, e-mail e convênio, mantendo colunas antigas e registros existentes. CPF é normalizado e único; a validação matemática dos dígitos não é aplicada, conforme decisão funcional. A idade é calculada no servidor a partir da data de nascimento. Registros legados podem continuar com os novos campos nulos.
 
-## Compatibilização de pacientes
+## Sessão e segurança
+- Login, usuário atual e logout são implementados em `/api/auth`.
+- Senhas legadas são comparadas em tempo constante e migradas para BCrypt após autenticação válida.
+- Novas senhas também são gravadas com BCrypt.
+- Cookie de sessão HttpOnly e SameSite=Lax.
+- `GET /api/auth/csrf` cria/retorna token da sessão; o filtro exige `X-CSRF-TOKEN` em POST, PUT e DELETE, exceto login e emissão do token.
+- Autorização por perfil: estoque (administrador/farmacêutico), histórico (administrador/médico), usuários e backups (administrador), relatórios (administrador/técnico).
+- As rotas de pacientes e consultas exigem sessão autenticada.
 
-O formulário contém CPF, nascimento, telefone, e-mail e convênio; o esquema legado tinha apenas nome, idade, endereço e contato. A migração incremental adicionou as novas colunas, mantendo as antigas e os registros. A idade deve ser calculada a partir da data de nascimento para novos registros. CPF é normalizado e deve ser único, mas não passa por validação matemática dos dígitos, conforme decisão funcional.
+## Persistência por módulo
+- Pacientes: `PacienteJdbcRepository`.
+- Consultas: `ConsultaJdbcRepository`, com relacionamento para pacientes e usuários médicos.
+- Estoque, histórico, usuários, relatórios e backups: `GestaoJdbcRepository`.
+- Backup: `BackupBancoService` gera arquivo SQL de dados no servidor, sem comando destrutivo de exclusão; registros com a mesma chave primária são atualizados via REPLACE. O esquema precisa existir no banco de destino.
 
-## Autenticação e sessão implementadas inicialmente
-
-- `POST /api/auth/login`: autentica pela coluna `email` (aceita também identificadores legados) e senha da tabela `usuarios`, cria sessão HTTP e devolve somente ID, nome, e-mail e perfil.
-- `GET /api/auth/me`: consulta a identidade mantida na sessão.
-- `POST /api/auth/logout`: invalida a sessão.
-- Senhas legadas em texto simples são comparadas em tempo constante e migradas para BCrypt após autenticação válida. Hashes BCrypt existentes são verificados com o encoder.
-- Cookie de sessão configurado como HttpOnly e SameSite=Lax.
-- A interface inicial chama o endpoint real; painel e módulos verificam a sessão.
-- Endpoints de leitura e cadastro de pacientes exigem sessão.
-
-**Limite atual:** autorização detalhada por perfil, proteção CSRF dedicada, limitação de tentativas e testes de ponta a ponta ainda precisam ser implementados antes de considerar a segurança concluída.
-
-## Cadastro de pacientes implementado inicialmente
-
-- `POST /api/pacientes` valida os campos no servidor, normaliza CPF para 11 dígitos, calcula idade e grava o usuário responsável a partir da sessão.
-- O índice UNIQUE do banco é a proteção final contra CPF duplicado; conflito retorna HTTP 409.
-- A tela de cadastro envia o formulário à API e a tela de consulta carrega os registros pela API.
-- A edição e a exclusão ainda não foram implementadas.
-
-## Segurança e dados
-
+## Cuidados com dados
 - Credenciais somente por variáveis de ambiente.
-- Validar entradas no servidor.
-- Não versionar dumps ou dados pessoais.
+- Dumps e arquivos de backup contêm dados pessoais e hashes de senha; não versionar nem anexar à entrega acadêmica.
 - Usar dados fictícios em testes e capturas.
-- Migrações SQL manuais; não são executadas automaticamente pela aplicação.
+- Não utilizar o sistema como serviço clínico real ou ambiente de produção sem revisão de segurança, privacidade e conformidade.
 
 ## Critério de conclusão
-
-Uma funcionalidade só será considerada concluída após código, execução de testes e evidência correspondente. Este documento registra decisões e o estado parcial da implementação, não certifica funcionalidades ainda não testadas.
+Código implementado não equivale a validação. Cada fluxo precisa passar por testes automatizados, execução integrada e evidência correspondente. O plano de integração mantém separados os itens implementados dos itens efetivamente validados.
