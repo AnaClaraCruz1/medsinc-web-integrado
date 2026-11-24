@@ -64,7 +64,7 @@ public class BackupBancoService {
                                         .toList();
                                 writer.write("INSERT INTO `" + tabela + "` (" + String.join(", ", nomes)
                                         + ") VALUES (" + String.join(", ", valores) + ") ON DUPLICATE KEY UPDATE "
-                                        + String.join(", ", atualizacoes) + ");\\n");
+                                        + String.join(", ", atualizacoes) + ");\n");
                             }
                         }
                     }
